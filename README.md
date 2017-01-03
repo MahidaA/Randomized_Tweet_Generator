@@ -1,22 +1,18 @@
 ## What is this?
 
-A silly Python script I made when I was bored. It reads, stores, and processes the text data from a given user's tweets and uses it to create its own randomized tweet.
+A silly Python script that reads and processes the text data from a given user's tweets and uses it to create its own randomized tweet, which can optionally be posted to Twitter.
+Not very original, but I wanted to make it regardless.
 
-## How to use
+I'm in the process of getting it on Heroku so it can actually run automatically as a bot.
 
-I haven't yet made this user-friendly, but if you really want to try it:
+## Usage
 
-1. Make sure you have Python 3+ installed, as well as the Tweepy library (get it here: http://www.tweepy.org/)
-2. Download the script file and fill in the four authentication keys at the top with your own (get them here: https://apps.twitter.com/)
-3. Set the USERNAME variable to whoever you want, making sure to leave off the @ sign (it's djkhaled by default)
-4. Run the script and view the resulting text file
+This isn't meant to be run as-is. Rather, you could use my code in your own program, or as a guide.
+If you really do just want to try it, do the following (no guarantees it will work, though):
 
-## Possible improvements
-
-This wasn't meant to be a serious project, but if I ever do decide to work on it in the future, these are some of the things I might do:
-
-* Reoragnize the code, split it into multiple files
-* Make it possible to change options without modifying the code i.e. command line arguments for username, number of tweets to read, etc.
-* Tweak the time delays to get more data in a run while staying under Twitter's rate limits
-* Be more efficient with data usage
-* Make a bot that posts the tweets directly to Twitter
+1.	Make sure you have Python 3+ installed, as well as Tweepy (http://www.tweepy.org/)
+2.	Download the script file and fill in the authentication keys at the top with your own (https://apps.twitter.com/)
+3.	Set the USERNAME variable to whoever you want (it's djkhaled by default, bless up), don't include the '@'
+4.	Run the script. When it's done, it will prompt you to post the tweet to Twitter using the account that the authentication keys belong to.
+	Regardless of your choice, the text of the tweet will be saved to a file called "tweet.txt"
+	If you get an error, or if the program exits without prompting you, try running it again.

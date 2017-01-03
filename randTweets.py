@@ -2,40 +2,42 @@ __author__ = "Amil Mahida"
 __email__ = "amil.mahida@gmail.com"
 __status__ = "Prototype"
 
+
+import sys
 import tweepy
 import random
 
-# THESE MUST BE FILLED OUT BEFORE THE PROGRAM CAN WORK
-# vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
-CONSUMER_KEY = "..."
-CONSUMER_KEY_SECRET = "..."
-ACCESS_TOKEN = "..."
-ACCESS_TOKEN_SECRET = "..."
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+CONSUMER_KEY = ""
+CONSUMER_KEY_SECRET = ""
+ACCESS_TOKEN = ""
+ACCESS_TOKEN_SECRET = ""
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_KEY_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
-api = tweepy.API(auth, wait_on_rate_limit=True)
+api = tweepy.API(auth, wait_on_rate_limit=True, wait_on_rate_limit_notify=True)
 
 USERNAME = "djkhaled"  # Replace with whoever you want
 
-COUNT = 10  # Number of tweets to process at a time; see https://dev.twitter.com/rest/public/timelines
+COUNT = 5  # Number of tweets to process at a time; see https://dev.twitter.com/rest/public/timelines
 MAX_TWEETS = 100  # Max number of tweets to collect, not including retweets
 
 tweet_count = 0
-timeline = []  # A list to store all the status objects, as returned by tweepy's methods
+timeline = api.user_timeline(screen_name=USERNAME, count=COUNT)  # A list to store all the status (tweet) objects
 tweet_text_list = []  # A list of strings containing the text from the tweets, excluding retweets
 
-timeline += api.user_timeline(screen_name=USERNAME, count=COUNT)
-for tweet in timeline:
-    if not tweet.text.startswith("RT @"):  # Save the text only from original tweets, not retweets
+# In case the selected user has no tweets, terminate the program because there's nothing to do.
+if not timeline:
+    sys.exit()
+
+for status in timeline:
+    if not status.text.startswith("RT @"):  # Count and save the text only from original tweets, not retweets
         tweet_count += 1
-        tweet_text_list.append(tweet.text)
+        tweet_text_list.append(status.text)
 
 lowest_id = timeline[-1].id
 
 while tweet_count < MAX_TWEETS:
-    # Not likely to happen, but stop looping in case we've gone through all tweets
+    # Stop looping in case we've gone through all tweets
     if not api.user_timeline(screen_name=USERNAME, max_id=lowest_id - 1, count=COUNT):
         break
 
@@ -162,15 +164,45 @@ def create_tweet(wlist):
 
     return generated_tweet
 
-test_tweet = create_tweet(master_word_list)
 
-# Open a text file to write the generated tweet to. Unicode is used because of emojis.
-# Disclaimer: emojis will probably appear in the text file as squares or junk characters
-# due to lack of emojis in most text editor fonts.
-fileout = open("tweet.txt", "w", encoding="utf8")
+# Helper function that inserts str2 into str1 AFTER the index given by pos.
+# Python strings are immutable so it doesn't actually modify anything, it just returns the resulting string.
+# Example: str1 = "@djkhaled:, str2 = '_', pos = 0 results in "@_djkhaled"
+def insert_into(str1, str2, pos):
+    return str1[0:(pos + 1)] + str2 + str1[(pos + 1):]
 
-for w in test_tweet:
-    string = w.word
-    fileout.write(w.word + " ")
 
-fileout.close()
+# Repeatedly create a tweet until it gets one that fits within the Twitter character limit (140 characters).
+# Stops if it can't create a short enough tweet with the data it has (I have it arbitrarily set to try 100 times).
+iterations = 0
+while iterations < 100:
+    tweet = create_tweet(master_word_list)
+    tweet_string = u""
+
+    # Store the text of the resulting tweet in a string.
+    # This is for length-checking, and will make it possible to upload the tweet to Twitter.
+    for t in tweet:
+        tweet_string += t.word + ' '
+
+    # Insert a period after every '@' character in the tweet.
+    # This is to avoid bothering users with mentions and replies.
+    for i in range(0, len(tweet_string)):
+        if tweet_string[i] == '@':
+            tweet_string = insert_into(tweet_string, '.', i)
+
+    if len(tweet_string) <= 140:
+		# Print the tweet and ask if it should be posted to the authenticated user's timeline
+        print("The generated tweet is: \n", tweet_string, '\n')
+        post = input("Post to Twitter? (y/n) ")
+        if post == 'y':
+            api.update_status(tweet_string)
+
+        # Open a text file to write the generated tweet to.
+        # Emojis will probably appear in the text file as squares or junk characters
+        # due to lack of emojis in most text editor fonts.
+        fileout = open("tweet.txt", "w", encoding="utf8")
+        fileout.write(tweet_string)
+        fileout.close()
+        break
+
+    iterations += 1
