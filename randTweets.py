@@ -7,10 +7,10 @@ import sys
 import tweepy
 import random
 
-CONSUMER_KEY = ""
-CONSUMER_KEY_SECRET = ""
-ACCESS_TOKEN = ""
-ACCESS_TOKEN_SECRET = ""
+CONSUMER_KEY = os.environ['CONSUMER_KEY']
+CONSUMER_KEY_SECRET = os.environ['CONSUMER_KEY_SECRET']
+ACCESS_TOKEN = os.environ['ACCESS_TOKEN']
+ACCESS_TOKEN_SECRET = os.environ['ACCESS_TOKEN_SECRET']
 
 auth = tweepy.OAuthHandler(CONSUMER_KEY, CONSUMER_KEY_SECRET)
 auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
@@ -191,18 +191,14 @@ while iterations < 100:
             tweet_string = insert_into(tweet_string, '.', i)
 
     if len(tweet_string) <= 140:
-		# Print the tweet and ask if it should be posted to the authenticated user's timeline
-        print("The generated tweet is: \n", tweet_string, '\n')
-        post = input("Post to Twitter? (y/n) ")
-        if post == 'y':
-            api.update_status(tweet_string)
+        api.update_status(tweet_string)
 
         # Open a text file to write the generated tweet to.
         # Emojis will probably appear in the text file as squares or junk characters
         # due to lack of emojis in most text editor fonts.
-        fileout = open("tweet.txt", "w", encoding="utf8")
-        fileout.write(tweet_string)
-        fileout.close()
+        # fileout = open("tweet.txt", "w", encoding="utf8")
+        # fileout.write(tweet_string)
+        # fileout.close()
         break
 
     iterations += 1
